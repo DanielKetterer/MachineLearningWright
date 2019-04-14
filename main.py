@@ -1,9 +1,5 @@
-print("CS6840 HW 1")
-#import os
-#os.chdir('c:\\Users') # Replace with path 
+print("Task 2")
 import numpy as np
-from sklearn.linear_model import LinearRegression
-from sklearn import preprocessing
 import matplotlib.pyplot as plt
  
 #load data - skip first row 
@@ -11,10 +7,10 @@ reData = np.loadtxt('reDataUCI.csv', delimiter = ",", skiprows = 1)
 
 
 numRows = np.size(reData,0)
-numCols = np.size(reData,1)
+numCols = np.size(reData,1)-1
 
-#Columns 0-6 are features
-#X0= id number
+#Columns 1-6 are features
+#We delete X0 here
 #X1=the transaction date (for example, 2013.250=2013 March, 2013.500=2013 June, etc.) 
 #X2=the house age (unit: year) 
 #X3=the distance to the nearest MRT station (unit: meter) 
@@ -22,110 +18,135 @@ numCols = np.size(reData,1)
 #X5=the geographic coordinate, latitude. (unit: degree) 
 #X6=the geographic coordinate, longitude. (unit: degree)
 
-xFeatures = reData[:,0:numCols-1]
+trainingData = reData[:,1:numCols-1]
 
 #Last column are the labels
-yLabels = reData[:,7]
+labels = reData[:,[numCols-1]]
 
 """
 OLS Derivation
 # Ax = b 
 # A'Ax = A'b
 # x = inverse(A'A)*A'b
-# Here x is a feature vector, A is xFeatures, and b is Ylabels.
+# Here x is a feature vector, A is trainingData, and b is labels.
 """
-def ordinaryLeastSquares(xFeatures, Ylabels):
+def ordinaryLeastSquares(trainingData, labels):
 
-	XTX = np.dot(xFeatures.T,xFeatures)
-	XTY = np.dot(xFeatures.T, Ylabels)
-	OLS_params = np.dot(np.linalg.inv(XTX),XTY)
-	print(OLS_params)
+    XTX = np.dot(trainingData.T,trainingData)
+    XTY = np.dot(trainingData.T, labels)
+    parameters = np.dot(np.linalg.inv(XTX),XTY)
+    return parameters
 
 """
-Calculate the hypothesis = X * theta
+Calculate the hypothesis = X * parameters
 Calculate the cost = (h - y)^2 
 Calculate the gradient = sum(X' * loss )/ m  #this is the part that makes it batch
-Update the parameters theta = theta - alpha * gradient of cost 
+Update the parameters parameters = parameters - alpha * gradient of cost 
 Check if cost is less than epsilon
 """
-def bgd(xFeatures, yLabels, alpha, epsilon, epochs):
-    i = 0
-    theta = np.array([[0 for x in range(numCols-1)]], ndmin=2)
-   # print(theta)
-   # theta.shape = (numCols-1,1)
-    theta = np.transpose(theta)
-    print(theta)
+def bgd(trainingData, labels, alpha, epsilon, epochs):
+    k = 0
+    col = np.size(trainingData,1)
+    row = np.size(trainingData,0)
+    parameters = np.array([[0 for x in range(col)]], ndmin=2).T
     Cost = epsilon + 1
-    while i < epochs or Cost < epsilon:
-        Hypo = np.dot(xFeatures, theta)
-        Diff = Hypo - yLabels
-       # print(Diff)
-       # print(Hypo)
-       # print(yLabels)
+    while k < epochs and Cost > epsilon:
+        Hypo = np.dot(trainingData, parameters)
+        Diff = Hypo - labels
         Cost = (1/2*numRows) * np.sum(np.square(Diff) ) 
-       # print(Cost)
-        theta = theta - alpha * (1.0/numRows) * np.dot(np.transpose(xFeatures), Diff)
-        #print(theta)
-        i += 1
-        #print(i)
-    return theta
+        parameters = parameters - alpha * (1.0/row) * np.dot(np.transpose(trainingData), Diff)
+        k += 1
+    return parameters
     
     
 """
-TODO
-3. Test each algorithm on the reDataUCI dataset from Task 1. Report the best one
-4. Report the affects of trying a variety of learning rates and number of
+Report the affects of trying a variety of learning rates and number of
 epochs. 
 Plot the cost of the bgd function after each epoch for
 a variety of number of epochs and learning rate. 
 """
-test = bgd(xFeatures, yLabels, .0000001, .0000001, 10000)
+test = bgd(trainingData, labels, .00000001, .000001, 100)
+print(test)
+test2 = ordinaryLeastSquares(trainingData, labels)
+print(test2)
 
-test2 = ordinaryLeastSquares(xFeatures, yLabels)
 
-CostHistory = []
 #Here is where a variety of alpha, epochs are tested
-for i in range(2):
- alpha = 1000**(-i-1)
- for j in range(5):
-  epochs =10**(j)
-  theta = bgd(xFeatures, yLabels, alpha, .0000001, epochs)
-  Hypo = np.dot(xFeatures, theta)
-  sse = np.sum(np.square(np.subtract(yLabels,Hypo)))
-  mse = np.mean(np.square(np.subtract(yLabels,Hypo)))
-  print('SSE and MME: alpha and epochs ' + str(sse) + str(', ') + str(mse) + str(', ') + str(alpha) + str(', ') + str(epochs))
-  Diff = Hypo - yLabels
+
+for i in range(5):
+ alpha = 10**(-i-6)
+ CostHistory = []
+ EpochHistory = []
+ for w in range(5):
+  epochs =10**(w)
+  parameters = bgd(trainingData, labels, alpha, .0000001, epochs)
+  Hypo = np.dot(trainingData, parameters)
+  sse = np.sum(np.square(np.subtract(labels,Hypo)))
+  mse = np.mean(np.square(np.subtract(labels,Hypo)))
+  print('DataSet 1 SSE and MME: alpha and epochs ' + str(sse) + str(', ') + str(mse) + str(', ') + str(alpha) + str(', ') + str(epochs))
+  Diff = Hypo - labels
   Cost = (1/2*numRows) * np.sum(np.square(Diff) )
   CostHistory.append(Cost)
+  EpochHistory.append(epochs)
  fig = plt.figure()
- plt.plot(epochs, Cost, color = 'r')
+ plt.plot(EpochHistory, CostHistory, color = 'r')
  fig.suptitle("alpha = " + str(alpha))
  plt.xlabel("Epoch #")
  plt.ylabel("Cost")
  plt.show()
+
+ 
+ 
 """
 5. Repeat tasks 1.3, 2.3 and 2.4 for another dataset of your choosing. You
 may use any dataset you wish from any public repository (UCI, Kaggle,
 etc.). Give a brief description of the dataset (features, labels).
-"""
 
+"""
 #this is using the new dataset
 reData = np.loadtxt('Admission_Predict.csv', delimiter = ",", skiprows = 1)
 
 
 numRows = np.size(reData,0)
-numCols = np.size(reData,1)
+numCols = np.size(reData,1)-1
 
 
-xFeatures = reData[:,0:numCols-1]
-yLabels = reData[:,numRows-1]
+trainingData = reData[:,1:numCols-1]
+labels = reData[:,[numCols-1]]
 
-newtest = bgd(xFeatures, yLabels, .0000001, .0000001, 10000)
-
-newtest2 = ordinaryLeastSquares(xFeatures, yLabels)
+newtest = bgd(trainingData, labels, .00001, .0000001, 100000)
 
 
+#Here is where a variety of alpha, epochs are tested on the 2nd dataset
 
+for i in range(5):
+ alpha = 10**(-i-6)
+ CostHistory = []
+ EpochHistory = []
+ for w in range(5):
+  epochs =10**(w)
+  parameters = bgd(trainingData, labels, alpha, .0000001, epochs)
+  Hypo = np.dot(trainingData, parameters)
+  sse = np.sum(np.square(np.subtract(labels,Hypo)))
+  mse = np.mean(np.square(np.subtract(labels,Hypo)))
+  print('Dataset 2 SSE and MME: alpha and epochs ' + str(sse) + str(', ') + str(mse) + str(', ') + str(alpha) + str(', ') + str(epochs))
+  Diff = Hypo - labels
+  Cost = (1/2*numRows) * np.sum(np.square(Diff) )
+  CostHistory.append(Cost)
+  EpochHistory.append(epochs)
+ fig = plt.figure()
+ plt.plot(EpochHistory, CostHistory, color = 'r')
+ fig.suptitle("alpha = " + str(alpha))
+ plt.xlabel("Epoch #")
+ plt.ylabel("Cost")
+ plt.show()
+
+
+
+
+
+
+newtest2 = ordinaryLeastSquares(trainingData, labels)
 """
 
 
