@@ -346,6 +346,7 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 
 #################################################################################
 print("iteration 2")
+print("square the lat and long xFeatures")
 #load data - skip first row which only contains metadata
 reData = np.loadtxt('reDataUCI.csv', delimiter = ",", skiprows = 1)
 numRows = np.size(reData,0)
@@ -358,6 +359,12 @@ xFeaturesTrimmed = np.hstack((xFeatures[:,[1]], xFeatures[:,[2]],xFeatures[:,[3]
 reg = LinearRegression().fit(xFeaturesTrimmed, yLabels)
 print("SSE for trimmed features: " + str(reg._residues))
 
+# New Column indexing 0-4 are features
+#X0=the transaction date (for example, 2013.250=2013 March, 2013.500=2013 June, etc.) 
+#X1=the house age (unit: year) 
+#X2=the distance to the nearest MRT station (unit: meter) 
+#X3=number of convenience stores in foot travel
+#X3=the sum of the latitudes and longitudes
 
 # take the mod 1 of each date to hack off the year
 x0 = xFeaturesTrimmed[:,[0]]
@@ -371,12 +378,11 @@ x0 = np.log(x0)
 reg = LinearRegression().fit(x0 , yLabels)
 predictedY = reg.predict(x0)
 
-
 reg = LinearRegression().fit(x0, yLabels)
 predictedY = reg.predict(x0)
 print("SSE for single variable1 (mod appraoch):" + str(reg._residues))
 
-# log scale 3rd feature
+# log scale x2 
 x2 = xFeaturesTrimmed[:,[2]]
 x2 = np.log10(x2)
 
@@ -394,7 +400,7 @@ reg = LinearRegression().fit(x4 , yLabels)
 predictedY = reg.predict(x4)
 
 #print("Coefficent for single variable:" +  str(reg.coef_))
-print("SSE for single variable 5 (exp2):" + str(reg._residues))
+print("SSE for single variable 5 (square):" + str(reg._residues))
 
 
 # sqr 6th feature
@@ -405,7 +411,7 @@ reg = LinearRegression().fit(x5 , yLabels)
 predictedY = reg.predict(x5)
 
 #print("Coefficent for single variable:" +  str(reg.coef_))
-print("SSE for single variable 6 (exp2):" + str(reg._residues))
+print("SSE for single variable 6 (square):" + str(reg._residues))
 
 #Fit the model again with the updated features:
 xFeaturesTrimmed[:,0] = np.log(xFeaturesTrimmed[:,0])
@@ -822,7 +828,7 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 
 #################################################################################
 print("iteration 8")
-print("cubing the multiplied lat and long features increases the SSE more than squaring")
+print("cubing the multiplied lat and long features slightly decreases the SSE more than squaring")
 print("now we will take the square root of the combined multiplied lat and longs")
 
 
@@ -906,7 +912,7 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 #################################################################################
 print("iteration 9")
 print("taking the sq rt of the multiplied lat and long features has a similiar effect to the log")
-print("the greatest reduction in SSE for the combined lat and long features is not to transform the features")
+print("the greatest reduction in SSE for the combined lat and long features is the polynomial (cube) transform of the features")
 
 
 
@@ -976,6 +982,7 @@ print("SSE for x4 (no transform):" + str(reg._residues))
 #Fit the model again with the updated features:
 xFeaturesTrimmed[:,0] = np.sqrt(xFeaturesTrimmed[:,0])
 xFeaturesTrimmed[:,2] = np.log(xFeaturesTrimmed[:,2])
+xFeaturesTrimmed[:,4] = np.power((xFeaturesTrimmed[:,2]), 3)
 
 
 reg = LinearRegression().fit(xFeaturesTrimmed, yLabels)
@@ -987,8 +994,7 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 
 #################################################################################
 print("iteration 10")
-print("the greatest reduction in SSE for the combined lat and long features is not to transform the features")
-print("the greatest reduction in MSE for the combined lat and long features is to square the feature set")
+print("the greatest reduction in SSE for the combined lat and long features is by performing a polynomial (cube) transform of the that feature")
 print("we will manually remove the most the outlier from the graph (id no. 271), and use the original lat and log features")
 print("we will not apply any transformation to x5 and x6")
 #load data - skip first row which only contains metadata
@@ -1323,7 +1329,8 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 
 #################################################################################
 print("iteration 14")
-
+print("squaring the location feature did not lower the residuals below iteration 11")
+print("we assume that a cubing the feature will be lower than squaring, but will not beat iteration 11")
 
 #load data - skip first row which only contains metadata
 reData = np.loadtxt('reDataUCI-modified.csv', delimiter = ",", skiprows = 1)
@@ -1381,7 +1388,7 @@ print("SSE for single variable 3 (log2 and sqrt):" + str(reg._residues))
 
 # the combined x5 and x6 features
 x4 = xFeaturesTrimmed[:,[4]]
-x4 = np.sqrt(x4)
+x4 = np.power((x4), 3)
 reg = LinearRegression().fit(x4 , yLabels)
 predictedY = reg.predict(x4)
 #print("Coefficent for single variable:" +  str(reg.coef_))
@@ -1391,7 +1398,7 @@ print("SSE for combined variables 5 & 6 (sqrt):" + str(reg._residues))
 #Fit the model again with the updated features:
 xFeaturesTrimmed[:,0] = np.sqrt(xFeaturesTrimmed[:,0])
 xFeaturesTrimmed[:,2] = np.log(xFeaturesTrimmed[:,2])
-xFeaturesTrimmed[:,4] = np.sqrt(xFeaturesTrimmed[:,4])
+xFeaturesTrimmed[:,4] = np.power((xFeaturesTrimmed[:,4]), 3)
 reg = LinearRegression().fit(xFeaturesTrimmed, yLabels)
 yPredicted  = reg.predict(xFeaturesTrimmed)
 print("SSE for updated features: " + str(reg._residues))
@@ -1471,7 +1478,7 @@ print('MSE all features: ' + str(np.mean(np.square(np.subtract(yLabels,yPredicte
 
 
 #################################################################################
-print("iteration 15")
+print("iteration 16")
 print("trimming the x1 feature (transaction date) increased bothed MSE and SSE")
 print("we will trim a final feature, x2, house age")
 
@@ -1481,11 +1488,6 @@ numRows = np.size(reData,0)
 numCols = np.size(reData,1)
 xFeatures = reData[:,0:numCols-1]
 yLabels = reData[:,7]
-
-# combine features 5 & 6 (adding features)
-location = xFeatures[:,5]*xFeatures[:,6]
-#reshape location array
-location = location.reshape(-1,1)
 
 print("trimming: xFeature[:,1], xFeature[:,2]")
 print("reinserting: x5 and x6 seperately")
