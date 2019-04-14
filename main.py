@@ -220,8 +220,6 @@ reg = LinearRegression()
 reg = reg.fit(trainingData, labels)
 
 # Predict new values based on some given samples.
-# In this case, this fits the instances I used to create the model
-# so I can do residual analysis
 yPredicted  = reg.predict(trainingData)
 
 # The sum of square error: (yPredicted - labels)^2
@@ -232,7 +230,7 @@ print('All features coefficients: ' + str(reg.coef_))
 print('Intercept: ' + str(reg.intercept_))
 print('reg.residue all features: '+ str(reg._residues))
 print('SSE all features: '+ str(sse))
-print('MSE all feautre: ' + str(np.mean(np.square(np.subtract(labels,yPredicted)))))
+print('MSE all features: ' + str(np.mean(np.square(np.subtract(labels,yPredicted)))))
 
 
 
