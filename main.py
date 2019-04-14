@@ -1,7 +1,7 @@
 print("Task 2")
 import numpy as np
 import matplotlib.pyplot as plt
- 
+from sklearn.linear_model import LinearRegression
 #load data - skip first row 
 reData = np.loadtxt('reDataUCI.csv', delimiter = ",", skiprows = 1)
 
@@ -67,9 +67,13 @@ a variety of number of epochs and learning rate.
 """
 test = bgd(trainingData, labels, .00000001, .000001, 100)
 print(test)
-test2 = ordinaryLeastSquares(trainingData, labels)
-print(test2)
-
+parameters = ordinaryLeastSquares(trainingData, labels)
+print('test2')
+Hypo = np.dot(trainingData, parameters)
+sse = np.sum(np.square(np.subtract(labels,Hypo)))
+mse = np.mean(np.square(np.subtract(labels,Hypo)))
+print('OLS SSE and MME:' + str(sse) + str(', ') + str(mse) + str(', '))
+ 
 
 #Here is where a variety of alpha, epochs are tested
 
@@ -141,12 +145,97 @@ for i in range(5):
  plt.ylabel("Cost")
  plt.show()
 
+x1 = trainingData[:,[1]]
+reg = LinearRegression().fit(x1 , labels)
+predictedY = reg.predict(x1)
+
+#print("Coefficent for single variable:" +  str(reg.coef_))
+print("SSE for single variable 1:" + str(reg._residues))
+plt.figure()
+plt.scatter(x1, labels, color = 'g')
+plt.plot(x1, predictedY, color = 'r')
+
+
+x2 = trainingData[:,[2]]
+reg = LinearRegression().fit(x2 , labels)
+predictedY = reg.predict(x2)
+
+#print("Coefficent for single variable:" +  str(reg.coef_))
+print("SSE for single variable 2:" + str(reg._residues))
+plt.figure()
+plt.scatter(x2, labels, color = 'g')
+plt.plot(x2, predictedY, color = 'r')
+
+
+x3 = trainingData[:,[3]]
+reg = LinearRegression().fit(x3 , labels)
+predictedY = reg.predict(x3)
+
+#print("Coefficent for single variable:" +  str(reg.coef_))
+print("SSE for single variable 3:" + str(reg._residues))
+plt.figure()
+plt.scatter(x3, labels, color = 'g')
+plt.plot(x3, predictedY, color = 'r')
+
+
+x4 = trainingData[:,[4]]
+reg = LinearRegression().fit(x4 , labels)
+predictedY = reg.predict(x4)
+
+#print("Coefficent for single variable:" +  str(reg.coef_))
+print("SSE for single variable 4:" + str(reg._residues))
+plt.figure()
+plt.scatter(x4, labels, color = 'g')
+plt.plot(x4, predictedY, color = 'r')
+
+
+x5 = trainingData[:,[5]]
+reg = LinearRegression().fit(x5 , labels)
+predictedY = reg.predict(x5)
+
+#print("Coefficent for single variable:" +  str(reg.coef_))
+print("SSE for single variable 5:" + str(reg._residues))
+plt.figure()
+plt.scatter(x5, labels, color = 'g')
+plt.plot(x5, predictedY, color = 'r')
+
+
+
 
 
 
 
 
 newtest2 = ordinaryLeastSquares(trainingData, labels)
+
+Hypo = np.dot(trainingData, newtest2)
+sse = np.sum(np.square(np.subtract(labels,Hypo)))
+mse = np.mean(np.square(np.subtract(labels,Hypo)))
+print('OLS2 SSE and MME: alpha and epochs ' + str(sse) + str(', ') + str(mse) + str(', ') + str(alpha) + str(', ') + str(epochs))
+
+
+reg = LinearRegression()
+
+# Find the best fit linear regression model
+reg = reg.fit(trainingData, labels)
+
+# Predict new values based on some given samples.
+# In this case, this fits the instances I used to create the model
+# so I can do residual analysis
+yPredicted  = reg.predict(trainingData)
+
+# The sum of square error: (yPredicted - labels)^2
+# This should be the same as reg.residues_
+sse = np.sum(np.square(np.subtract(labels,yPredicted)))
+
+print('All features coefficients: ' + str(reg.coef_))
+print('Intercept: ' + str(reg.intercept_))
+print('reg.residue all features: '+ str(reg._residues))
+print('SSE all features: '+ str(sse))
+print('MSE all feautre: ' + str(np.mean(np.square(np.subtract(labels,yPredicted)))))
+
+
+
 """
 
 
